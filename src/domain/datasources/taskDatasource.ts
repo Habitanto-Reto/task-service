@@ -5,6 +5,6 @@ export abstract class TaskDataSource {
     abstract saveTask(task: ITask): Promise<void>;
     abstract updateTask(task: ITask): Promise<void>;
     abstract removeTask(taskId: string): Promise<void>;
-    abstract getTasks(filter: ITaskFilter): Promise<ITask[]>;
+    abstract getTasks(filter: ITaskFilter): Promise<{ tasks: ITask[], total: number }>;
     abstract getTaskById(taskId: string): Promise<ITask | null>;
 }

@@ -53,7 +53,7 @@ class TaskService {
     }
     //TODO: mark as completed
 
-    async getTasks(filter: ITaskFilter): Promise<ITask[] | null> {
+    async getTasks(filter: ITaskFilter): Promise<{ tasks: ITask[], total: number }> {
         try{
             return this.repository.getTasks(filter);
         }catch (e) {

@@ -14,7 +14,7 @@ class TaskDatasourceImpl implements TaskDataSource {
     async removeTask(taskId: string) {
         await Task.deleteOne({ uuid: taskId });
     }
-    async getTasks(filter: ITaskFilter): Promise<ITask[]> {
+    async getTasks(filter: ITaskFilter): Promise<{ tasks: ITask[], total: number }> {
         let query: { [key: string]: any } = {};
 
         if (filter.name) {
@@ -29,11 +29,14 @@ class TaskDatasourceImpl implements TaskDataSource {
         const limit = filter.pageSize;
 
         try {
-            return await Task.find(query)
+            const total = await Task.countDocuments(query).exec();
+            const tasks = await Task.find(query)
                 .sort({ createdAt: -1 })
                 .skip(skip)
                 .limit(limit)
                 .exec();
+
+            return { tasks, total };
         } catch (error) {
             throw new Error(`Error retrieving tasks: ${(error as Error).message}`);
         }

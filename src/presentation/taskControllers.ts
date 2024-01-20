@@ -55,9 +55,21 @@ class TaskController {
             const email = typeof req.query.email === 'string' ? req.query.email : undefined;
 
             const filter = { pageNumber, pageSize, ...(name && { name }), ...(email && { email }) };
-            const tasks = await this.taskService.getTasks(filter);
+            const { tasks, total } = await this.taskService.getTasks(filter);
 
-            return res.status(200).json(tasks);
+            const totalPages = Math.ceil(total / pageSize);
+            const nextPage = pageNumber < totalPages ? pageNumber + 1 : null;
+            const prevPage = pageNumber > 1 ? pageNumber - 1 : null;
+
+            return res.status(200).json({
+                currentPage: pageNumber,
+                pageSize,
+                totalPages,
+                totalRecords: total,
+                nextPage,
+                prevPage,
+                items: tasks
+            });
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: "Error al recuperar las tareas", error: (error as Error).message });

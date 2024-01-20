@@ -18,7 +18,7 @@ class TaskRepositoryImpl extends TaskRepository {
     async removeTask(taskId: string): Promise<void> {
         await this.taskDataSource.removeTask(taskId);
     }
-    async getTasks(filter: ITaskFilter): Promise<ITask[]> {
+    async getTasks(filter: ITaskFilter): Promise<{ tasks: ITask[], total: number }> {
         return await this.taskDataSource.getTasks(filter);
     }
 
