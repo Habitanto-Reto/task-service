@@ -1,0 +1,16 @@
+{
+  "name": "task-service",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "git-semver-tags": "^7.0.1",
+    "standard-version": "^9.5.0"
+  }
+}
