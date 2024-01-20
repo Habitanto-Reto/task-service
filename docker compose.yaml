@@ -1,0 +1,55 @@
+version: '3'
+services:
+  task-service:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - DB_ADMIN=$DB_ADMIN
+      - DB_ADMIN_PWD=$DB_ADMIN_PWD
+      - DB_NAME=$DB_NAME
+      - DB_HOST=$DB_HOST
+      - DB_PORT=$DB_PORT
+      - PORT=3001
+      - JWT_SECRET=$JWT_SECRET
+  auth:
+    image: ghcr.io/habitanto-reto/auth-service:0.0.5
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_ADMIN=$DB_ADMIN
+      - DB_ADMIN_PWD=$DB_ADMIN_PWD
+      - DB_NAME=$DB_NAME
+      - DB_HOST=$DB_HOST
+      - DB_PORT=$DB_PORT
+      - PORT=$PORT
+      - JWT_SECRET=$JWT_SECRET
+
+  mongo:
+    # To create this service, Compose will pull the mongo
+    image: mongo:latest
+    container_name: mongo
+    restart: unless-stopped
+    # This tells Compose that we would like to add environment variables
+    # from a file called .env, located in our build context.
+    env_file: .env
+    environment:
+      # MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD together create
+      # a root user in the admin authentication database and ensure that authentication is enabled
+      # when the container starts. We have set MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD
+      # using the values from our .env file, which we pass to the db service using the env_file option.
+      - MONGO_INITDB_ROOT_USERNAME=$DB_ADMIN
+      - MONGO_INITDB_ROOT_PASSWORD=$DB_ADMIN_PWD
+      - MONGO_INITDB_DATABASE=$DB_NAME
+    ports:
+      - '27017:27017'
+    volumes:
+      - ./addons/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      # The named volume dbdata will persist the data stored in Mongo’s default data directory, /data/db.
+      # This will ensure that you don’t lose data in cases where you stop or remove containers.
+      - dbdata:/data/db
+
+volumes:
+  dbdata:
+  cache:
+    driver: local
