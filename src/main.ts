@@ -5,6 +5,9 @@ import TaskRepositoryImpl from "./infrastructure/repositories/taskRepositoryImpl
 import express from 'express';
 import {Database} from "./domain/entities/database";
 import {jwtMiddleware} from "./infrastructure/jwtMiddleware";
+import {Kafka} from "kafkajs";
+import process from "process";
+import KafkaClient from "./infrastructure/datasources/KafkaClient";
 
 export class Server {
     private app: express.Express;
@@ -17,9 +20,11 @@ export class Server {
         this.database = database;
         this.app.use(express.json());
 
+        const kafkaClient = new KafkaClient();
+
         const dataSource = new TaskDatasourceImpl();
         const repository = new TaskRepositoryImpl(dataSource);
-        const service = new TaskService(repository);
+        const service = new TaskService(repository, kafkaClient);
         const controller = new TaskController(service);
 
         this.app.post('/task', jwtMiddleware, (req, res) => controller.createTask(req, res));

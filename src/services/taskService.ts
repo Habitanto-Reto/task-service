@@ -34,18 +34,22 @@ class TaskService {
 
         if (task.isCompleted) {
             task.completedDate = new Date();
-            //TODO: send infrastructure (Event drive KAFKA)
+            console.log(`Task with id: ${task.uuid} marked as completed`);
+            //send infrastructure (Event drive KAFKA)
+            try {
+                await this.kafkaClient.sendMessage('task-completed', [{
+                    value: JSON.stringify({
+                        creatorUserId: existingTask.creatorUserId,
+                        task: existingTask.uuid,
+                        title: existingTask.title
+                    })
+                }]);
+            } catch (error) {
+                console.error('Error sending message to Kafka:', error);
+            }
         }
 
         await this.repository.updateTask(task);
-
-        await this.kafkaClient.sendMessage('task-completed', [{
-            value: JSON.stringify({
-                creatorUserId: existingTask.creatorUserId,
-                task: existingTask.uuid,
-                title: existingTask.title
-            })
-        }]);
 
         return task;
     }

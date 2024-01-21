@@ -1,14 +1,14 @@
 import { Kafka, Producer } from 'kafkajs';
+import * as process from "process";
 
 class KafkaClient {
     private producer: Producer;
 
     constructor() {
         const kafka = new Kafka({
-            clientId: 'task-service',
-            brokers: ['kafka:9092'] //TODO: move to env
+            clientId: process.env.CLIENT_KAFKA_ID,
+            brokers: [process.env.CLIENT_KAFKA_BROKERS || 'kafka:9092']
         });
-
         this.producer = kafka.producer();
     }
 
