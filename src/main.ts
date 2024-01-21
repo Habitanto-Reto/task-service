@@ -13,6 +13,7 @@ export class Server {
     private app: express.Express;
     private readonly port: number | string;
     private database: Database;
+    private kafkaClient: KafkaClient;
 
     constructor(port: number | string, database: Database) {
         this.app = express();
@@ -20,17 +21,29 @@ export class Server {
         this.database = database;
         this.app.use(express.json());
 
-        const kafkaClient = new KafkaClient();
+        this.kafkaClient = new KafkaClient();
 
         const dataSource = new TaskDatasourceImpl();
         const repository = new TaskRepositoryImpl(dataSource);
-        const service = new TaskService(repository, kafkaClient);
+        const service = new TaskService(repository, this.kafkaClient);
         const controller = new TaskController(service);
 
         this.app.post('/task', jwtMiddleware, (req, res) => controller.createTask(req, res));
         this.app.put('/task', jwtMiddleware, (req, res) => controller.updateTask(req, res));
         this.app.delete('/task/:taskId', jwtMiddleware, (req, res) => controller.removeTask(req, res));
         this.app.get('/tasks', jwtMiddleware, (req, res) => controller.getTasks(req, res));
+
+
+        this.initKafkaConnection();
+    }
+
+    private async initKafkaConnection() {
+        try {
+            await this.kafkaClient.connect();
+            console.log('Conexión a Kafka establecida con éxito');
+        } catch (error) {
+            console.error('Error al conectar con Kafka:', error);
+        }
     }
 
     async start() {
