@@ -1,12 +1,15 @@
 import {TaskRepository} from "../domain/repositories/taskRepository";
 import {ITask} from "../domain/entities/ITask";
 import {ITaskFilter} from "../domain/entities/ITaskFilter";
+import KafkaClient from "../infrastructure/datasources/KafkaClient";
 
 class TaskService {
     private repository: TaskRepository;
+    private kafkaClient: KafkaClient;
 
-    constructor(repository: TaskRepository) {
+    constructor(repository: TaskRepository, kafkaClient: KafkaClient) {
         this.repository = repository;
+        this.kafkaClient = kafkaClient;
     }
 
     async createTask(task: ITask, creatorUserId: string): Promise<void> {
@@ -29,10 +32,23 @@ class TaskService {
             throw new Error('Unauthorized: You are not allowed to update this task');
         }
 
+        if (task.isCompleted) {
+            task.completedDate = new Date();
+            //TODO: send infrastructure (Event drive KAFKA)
+        }
+
         await this.repository.updateTask(task);
+
+        await this.kafkaClient.sendMessage('task-completed', [{
+            value: JSON.stringify({
+                creatorUserId: existingTask.creatorUserId,
+                task: existingTask.uuid,
+                title: existingTask.title
+            })
+        }]);
+
         return task;
     }
-
 
     async removeTask(taskId: string, ownId: string): Promise<void> {
 

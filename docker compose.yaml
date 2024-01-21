@@ -13,7 +13,8 @@ services:
       - PORT=3001
       - JWT_SECRET=$JWT_SECRET
   auth:
-    image: ghcr.io/habitanto-reto/auth-service:0.0.5
+    #ghcr.io/habitanto-reto/auth-service:0.0.5
+    image: auth-service-app
     ports:
       - "3000:3000"
     environment:
@@ -48,6 +49,28 @@ services:
       # The named volume dbdata will persist the data stored in Mongo’s default data directory, /data/db.
       # This will ensure that you don’t lose data in cases where you stop or remove containers.
       - dbdata:/data/db
+  zookeeper:
+    container_name: zookeeper
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    container_name: kafka
+    image: wurstmeister/kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - ./data/kafka:/var/run/docker.sock
+      - ./create-topics.sh:/create-topics.sh
+    environment:
+      KAFKA_ADVERTISED_HOST_NAME: kafka
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_CREATE_TOPICS: "user-created:1:1"
+    depends_on:
+      - zookeeper
 
 volumes:
   dbdata:
