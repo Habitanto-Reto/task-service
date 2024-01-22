@@ -51,10 +51,10 @@ class TaskController {
         try {
             const pageNumber = parseInt(req.query.pageNumber as string) || 1;
             const pageSize = parseInt(req.query.pageSize as string) || 10;
-            const name = typeof req.query.name === 'string' ? req.query.name : undefined;
-            const email = typeof req.query.email === 'string' ? req.query.email : undefined;
+            const creatorUserId = typeof req.query.creatorUserId === 'string' ? req.query.creatorUserId : undefined;
+            const assigneeUserId = typeof req.query.assigneeUserId === 'string' ? req.query.assigneeUserId : undefined;
 
-            const filter = { pageNumber, pageSize, ...(name && { name }), ...(email && { email }) };
+            const filter = { pageNumber, pageSize, ...(creatorUserId && { creatorUserId }), ...(assigneeUserId && { assigneeUserId }) };
             const { tasks, total } = await this.taskService.getTasks(filter);
 
             const totalPages = Math.ceil(total / pageSize);

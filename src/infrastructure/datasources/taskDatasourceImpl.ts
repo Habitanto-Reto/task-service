@@ -17,12 +17,12 @@ class TaskDatasourceImpl implements TaskDataSource {
     async getTasks(filter: ITaskFilter): Promise<{ tasks: ITask[], total: number }> {
         let query: { [key: string]: any } = {};
 
-        if (filter.name) {
-            query['name'] = { $regex: filter.name, $options: 'i' };
+        if (filter.creatorUserId) {
+            query['creatorUserId'] = filter.creatorUserId;
         }
 
-        if (filter.email) {
-            query['email'] = filter.email;
+        if (filter.assigneeUserId) {
+            query['assigneeUserId'] = filter.assigneeUserId;
         }
 
         const skip = (filter.pageNumber - 1) * filter.pageSize;
